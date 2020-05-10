@@ -3,5 +3,12 @@
 #http://www.CarlWebster.com
 #Created on March 8, 2019
 #
+
+#V1.01 3-Apr-2019
+#	Fix an issue where the ListOfDDCs regkey value isn't seen by humans but PoSH "sees" it and creates 
+#		an array with one element with a value of one space. Added additional tests to check if ListOfDDCs 
+#		is Null or an empty string are a string of one space, then go to the test for RegisteredDdcFqdn. 
+#		Thanks to Rene Bigler for finding another bug in this script.
+
 #V1.00 2-Apr-2019
 #	Initial release

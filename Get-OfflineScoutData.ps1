@@ -59,9 +59,9 @@
 	No objects are output from this script.  This script creates a zip file.
 .NOTES
 	NAME: Get-OfflineScoutData.ps1
-	VERSION: 1.00
+	VERSION: 1.01
 	AUTHOR: Carl Webster, Sr. Solutions Architect at Choice Solutions
-	LASTEDIT: April 2, 2019
+	LASTEDIT: April 3, 2019
 #>
 
 [CmdletBinding(SupportsShouldProcess = $False, ConfirmImpact = "None", DefaultParameterSetName = "") ]
@@ -77,6 +77,12 @@ Param(
 #@carlwebster on Twitter
 #http://www.CarlWebster.com
 #Created on March 8, 2019
+#
+#V1.01 3-Apr-2019
+#	Fix an issue where the ListOfDDCs regkey value isn't seen by humans but PoSH "sees" it and creates 
+#		an array with one element with a value of one space. Added additional tests to check if ListOfDDCs 
+#		is Null or an empty string are a string of one space, then go to the test for RegisteredDdcFqdn. 
+#		Thanks to Rene Bigler for finding another bug in this script.
 #
 #V1.00 2-Apr-2019
 #	Initial release
@@ -282,7 +288,39 @@ catch
 		{
 			#trying because not every VDA has the ListOfDDCs value
 			#thanks to fellow CTP Rene Bigler for finding this logic flaw for me
-			$value = $subKey.GetValue("ListOfDDCs").Split(" ") 
+			$value = $subKey.GetValue("ListOfDDCs").Split(" ")
+			
+			If($Null -eq $value -or $value -eq "" -or $value -eq " ")
+			{
+				#ListOfDdcs exists but contains nothing
+				#now check for HKEY_LOCAL_MACHINE\SOFTWARE\Citrix\MachineIdentityServiceAgent\VdaStateMirror
+				$subKey =  $key.OpenSubKey("SOFTWARE\Citrix\MachineIdentityServiceAgent\VdaStateMirror")
+				If($Null -eq $subKey)
+				{
+					$XDSiteName = "VDA"
+				}
+				Else
+				{
+					$AA = $subKey.GetValue("RegisteredDdcFqdn")
+					#RegisteredDdcFqdn is the DDC the VDA registered with
+					If($Null -eq $AA -or $AA -eq "")
+					{
+						$XDSiteName = "VDA"
+					}
+					Else
+					{
+						try 
+						{
+							$XDSiteName = (Get-BrokerSite -AdminAddress $AA -EA 0).Name
+						}
+
+						catch 
+						{
+							$XDSiteName = "VDA"
+						}
+					}
+				}
+			}
 		}
 		
 		catch
