@@ -60,7 +60,7 @@
 .NOTES
 	NAME: Get-OfflineScoutData.ps1
 	VERSION: 1.01
-	AUTHOR: Carl Webster, Sr. Solutions Architect at Choice Solutions
+	AUTHOR: Carl Webster
 	LASTEDIT: April 3, 2019
 #>
 
